@@ -1,18 +1,25 @@
-#Vpc
+#S3 Bucket
+resource "random_id" "bucket_suffix" {
+  byte_length = 4
+}
+
+resource "aws_s3_bucket" "s3bucket" {
+  bucket = "eks-cluster-bucket-${random_id.bucket_suffix.hex}"
+}
+
+#VPC
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
 
-  name = "eks_cluster_vpc"
+  name = "eks-cluster-vpc"
   cidr = var.vpc_cidr
 
   azs             = data.aws_availability_zones.azs.names
   public_subnets  = var.public_subnets
   private_subnets = var.private_subnets
-
-
   enable_dns_hostnames = true
-  enable_nat_gateway   = true
-  single_nat_gateway   = true
+  enable_nat_gateway = true
+  single_nat_gateway = true
 
   tags = {
     "kubernetes.io/cluster/my-eks-cluster" = "shared"
@@ -30,7 +37,6 @@ module "vpc" {
 }
 
 #EKS
-
 module "eks" {
   source                         = "terraform-aws-modules/eks/aws"
   cluster_name                   = "my-eks-cluster"
